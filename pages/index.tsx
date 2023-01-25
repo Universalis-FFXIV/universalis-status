@@ -7,6 +7,9 @@ import { Container, Skeleton, styled, Typography } from "@mui/material";
 import LinearProgress, {
   linearProgressClasses,
 } from "@mui/material/LinearProgress";
+import universalis from "./universalis.png";
+import Grid from "@mui/material/Grid";
+import Image from "next/image";
 
 const prom = new PrometheusDriver({
   endpoint: "https://victoria.universalis.app",
@@ -195,9 +198,23 @@ const Home: NextPage = () => {
 
       <Container maxWidth="sm">
         <main>
-          <Typography variant="h2" component="h1">
-            Service Status
-          </Typography>
+          <Grid
+            container
+            spacing={2}
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Grid item xs={11}>
+              <Typography variant="h2" component="h1">
+                Service Status
+              </Typography>
+            </Grid>
+            <Grid item xs={1}>
+              <a href="https://universalis.app">
+                <Image src={universalis} />
+              </a>
+            </Grid>
+          </Grid>
 
           <MetricGauge
             label="Website error rate"
