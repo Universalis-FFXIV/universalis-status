@@ -3,7 +3,7 @@ import Head from "next/head";
 import { PrometheusDriver } from "prometheus-query";
 import { subHours } from "date-fns";
 import useSWR from "swr";
-import { Container, styled, Typography } from "@mui/material";
+import { Container, Skeleton, styled, Typography } from "@mui/material";
 import LinearProgress, {
   linearProgressClasses,
 } from "@mui/material/LinearProgress";
@@ -48,7 +48,7 @@ const mean = (data: DataPoint[]): number => {
 const useMeanMetric = (query: string, start: Date, end: Date, step: string) =>
   useSWR(query, (q) => queryTimeSeries(q, start, end, step).then(mean));
 
-const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
+const ThresholdLinearProgress = styled(LinearProgress)(({ theme, value }) => ({
   height: 30,
   borderRadius: 5,
   [`&.${linearProgressClasses.colorPrimary}`]: {
@@ -57,38 +57,111 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
   [`& .${linearProgressClasses.bar}`]: {
     borderRadius: 5,
-    backgroundColor: theme.palette.mode === "light" ? "#1a90ff" : "#308fe8",
+    backgroundColor: (value ?? 0) >= 80 ? "#ff0000" : "#1a90ff",
   },
 }));
+
+const rescale = (value: number, minValue: number, maxValue: number) => {
+  return (value - minValue) / (maxValue - minValue);
+};
+
+interface MetricGaugeProps {
+  label: string;
+  value: number;
+  loading?: boolean;
+  error?: boolean;
+  minValue?: number;
+  maxValue?: number;
+  format?: (value: number) => JSX.Element | JSX.Element[] | string;
+}
+
+const MetricGauge = ({
+  label,
+  value,
+  loading = false,
+  error = false,
+  minValue = 0,
+  maxValue = 100,
+  format = () => <>{value}</>,
+}: MetricGaugeProps) => {
+  if (loading) {
+    return (
+      <div>
+        <Typography variant="body1">{label}:&nbsp;Loading</Typography>
+        <Skeleton variant="rounded" height={30} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <Typography variant="body1">
+          {label}:&nbsp;<span style={{ color: "red" }}>Unable to retrieve</span>
+        </Typography>
+        <Skeleton variant="rounded" height={30} sx={{ bgcolor: "red" }} />
+      </div>
+    );
+  }
+
+  const valueText = format(value);
+  const valueScaled = rescale(value, minValue, maxValue) * 100;
+  return (
+    <div>
+      <Typography variant="body1">
+        {label}:&nbsp;{valueText}
+      </Typography>
+      <ThresholdLinearProgress
+        color="primary"
+        variant="determinate"
+        value={valueScaled}
+      />
+    </div>
+  );
+};
+
+const Gap = () => {
+  return <div style={{ marginBottom: 10 }} />;
+};
 
 const Home: NextPage = () => {
   const end = new Date();
   const start = subHours(end, 6);
   const step = "5s";
 
-  const { data: avgWebsiteErrorRate, error: avgWebsiteErrorRateErr } =
-    useMeanMetric(
-      '1.0 - ((sum (rate(traefik_service_requests_total{service="mogboard@docker", code="200"}[1m]))) / (sum (rate(traefik_service_requests_total{service="mogboard@docker"}[1m]))))',
-      start,
-      end,
-      step
-    );
+  const {
+    data: avgWebsiteErrorRate,
+    error: avgWebsiteErrorRateErr,
+    isLoading: avgWebsiteErrorRateLoading,
+  } = useMeanMetric(
+    '1.0 - ((sum (rate(traefik_service_requests_total{service="mogboard@docker", code="200"}[1m]))) / (sum (rate(traefik_service_requests_total{service="mogboard@docker"}[1m]))))',
+    start,
+    end,
+    step
+  );
   if (avgWebsiteErrorRateErr != null) {
     console.error(avgWebsiteErrorRateErr);
   }
 
-  const { data: avgWebsiteResponseTime, error: avgWebsiteResponseTimeErr } =
-    useMeanMetric(
-      'histogram_quantile(0.95, sum by(le) (rate(traefik_service_request_duration_seconds_bucket{service="mogboard@docker"}[1m])))',
-      start,
-      end,
-      step
-    );
+  const {
+    data: avgWebsiteResponseTime,
+    error: avgWebsiteResponseTimeErr,
+    isLoading: avgWebsiteResponseTimeLoading,
+  } = useMeanMetric(
+    'histogram_quantile(0.95, sum by(le) (rate(traefik_service_request_duration_seconds_bucket{service="mogboard@docker"}[1m])))',
+    start,
+    end,
+    step
+  );
   if (avgWebsiteResponseTimeErr != null) {
     console.error(avgWebsiteResponseTimeErr);
   }
 
-  const { data: avgApiErrorRate, error: avgApiErrorRateErr } = useMeanMetric(
+  const {
+    data: avgApiErrorRate,
+    error: avgApiErrorRateErr,
+    isLoading: avgApiErrorRateLoading,
+  } = useMeanMetric(
     '1.0 - ((sum (rate(traefik_service_requests_total{service="universalis@docker", code="200"}[1m]))) / (sum (rate(traefik_service_requests_total{service="universalis@docker"}[1m]))))',
     start,
     end,
@@ -98,13 +171,16 @@ const Home: NextPage = () => {
     console.error(avgApiErrorRateErr);
   }
 
-  const { data: avgApiResponseTime, error: avgApiResponseTimeErr } =
-    useMeanMetric(
-      'histogram_quantile(0.95, sum by(le) (rate(traefik_service_request_duration_seconds_bucket{service="universalis@docker"}[1m])))',
-      start,
-      end,
-      step
-    );
+  const {
+    data: avgApiResponseTime,
+    error: avgApiResponseTimeErr,
+    isLoading: avgApiResponseTimeLoading,
+  } = useMeanMetric(
+    'histogram_quantile(0.95, sum by(le) (rate(traefik_service_request_duration_seconds_bucket{service="universalis@docker"}[1m])))',
+    start,
+    end,
+    step
+  );
   if (avgApiResponseTimeErr != null) {
     console.error(avgApiResponseTimeErr);
   }
@@ -123,52 +199,38 @@ const Home: NextPage = () => {
             Service Status
           </Typography>
 
-          <Typography variant="body1">
-            Website error rate:{" "}
-            {avgWebsiteErrorRate == null
-              ? ""
-              : `${(avgWebsiteErrorRate * 100).toFixed(2)}%`}
-          </Typography>
-          <BorderLinearProgress
-            color="primary"
-            variant="determinate"
+          <MetricGauge
+            label="Website error rate"
+            loading={avgWebsiteErrorRateLoading}
+            error={avgWebsiteErrorRateErr}
             value={avgWebsiteErrorRate ?? 0}
+            format={(n) => `${(n * 100).toFixed(2)}%`}
           />
-          <div style={{ marginBottom: 10 }} />
-          <Typography variant="body1">
-            Website response time (P95):{" "}
-            {avgWebsiteResponseTime == null
-              ? ""
-              : `${avgWebsiteResponseTime.toFixed(2)}s`}
-          </Typography>
-          <BorderLinearProgress
-            color="primary"
-            variant="determinate"
+          <Gap />
+          <MetricGauge
+            label="Website response time (P95)"
+            loading={avgWebsiteResponseTimeLoading}
+            error={avgWebsiteResponseTimeErr}
             value={avgWebsiteResponseTime ?? 0}
+            maxValue={8}
+            format={(n) => `${n.toFixed(2)}s`}
           />
-          <div style={{ marginBottom: 10 }} />
-          <Typography variant="body1">
-            API error rate:{" "}
-            {avgApiErrorRate == null
-              ? ""
-              : `${(avgApiErrorRate * 100).toFixed(2)}%`}
-          </Typography>
-          <BorderLinearProgress
-            color="primary"
-            variant="determinate"
+          <Gap />
+          <MetricGauge
+            label="API error rate"
+            loading={avgApiErrorRateLoading}
+            error={avgApiErrorRateErr}
             value={avgApiErrorRate ?? 0}
+            format={(n) => `${(n * 100).toFixed(2)}%`}
           />
-          <div style={{ marginBottom: 10 }} />
-          <Typography variant="body1">
-            API response time (P95):{" "}
-            {avgApiResponseTime == null
-              ? ""
-              : `${avgApiResponseTime.toFixed(2)}s`}
-          </Typography>
-          <BorderLinearProgress
-            color="primary"
-            variant="determinate"
+          <Gap />
+          <MetricGauge
+            label="API response time (P95)"
+            loading={avgApiResponseTimeLoading}
+            error={avgApiResponseTimeErr}
             value={avgApiResponseTime ?? 0}
+            maxValue={8}
+            format={(n) => `${n.toFixed(2)}s`}
           />
         </main>
       </Container>
