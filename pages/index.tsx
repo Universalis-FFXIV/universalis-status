@@ -196,60 +196,58 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Container maxWidth="sm">
-        <main>
-          <Grid
-            container
-            spacing={2}
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Grid item xs={11}>
-              <Typography variant="h2" component="h1">
-                Service Status
-              </Typography>
-            </Grid>
-            <Grid item xs={1}>
-              <a href="https://universalis.app">
-                <Image src={universalis} />
-              </a>
-            </Grid>
+      <Container maxWidth="md">
+        <Grid
+          container
+          spacing={2}
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Grid item xs={11}>
+            <Typography variant="h2" component="h1">
+              Service Status
+            </Typography>
           </Grid>
+          <Grid item xs={1}>
+            <a href="https://universalis.app">
+              <Image src={universalis} />
+            </a>
+          </Grid>
+        </Grid>
 
-          <MetricGauge
-            label="Website error rate"
-            loading={avgWebsiteErrorRateLoading}
-            error={avgWebsiteErrorRateErr}
-            value={avgWebsiteErrorRate ?? 0}
-            format={(n) => `${(n * 100).toFixed(2)}%`}
-          />
-          <Gap />
-          <MetricGauge
-            label="Website response time (P95)"
-            loading={avgWebsiteResponseTimeLoading}
-            error={avgWebsiteResponseTimeErr}
-            value={avgWebsiteResponseTime ?? 0}
-            maxValue={8}
-            format={(n) => `${n.toFixed(2)}s`}
-          />
-          <Gap />
-          <MetricGauge
-            label="API error rate"
-            loading={avgApiErrorRateLoading}
-            error={avgApiErrorRateErr}
-            value={avgApiErrorRate ?? 0}
-            format={(n) => `${(n * 100).toFixed(2)}%`}
-          />
-          <Gap />
-          <MetricGauge
-            label="API response time (P95)"
-            loading={avgApiResponseTimeLoading}
-            error={avgApiResponseTimeErr}
-            value={avgApiResponseTime ?? 0}
-            maxValue={8}
-            format={(n) => `${n.toFixed(2)}s`}
-          />
-        </main>
+        <MetricGauge
+          label="Website error rate"
+          loading={avgWebsiteErrorRateLoading}
+          error={avgWebsiteErrorRateErr}
+          value={avgWebsiteErrorRate ?? 0}
+          format={(n) => `${(n * 100).toFixed(2)}%`}
+        />
+        <Gap />
+        <MetricGauge
+          label="Website response time (P95)"
+          loading={avgWebsiteResponseTimeLoading}
+          error={avgWebsiteResponseTimeErr}
+          value={avgWebsiteResponseTime ?? 0}
+          maxValue={8}
+          format={(n) => `${n.toFixed(2)}s`}
+        />
+        <Gap />
+        <MetricGauge
+          label="API error rate"
+          loading={avgApiErrorRateLoading}
+          error={avgApiErrorRateErr}
+          value={avgApiErrorRate ?? 0}
+          format={(n) => `${(n * 100).toFixed(2)}%`}
+        />
+        <Gap />
+        <MetricGauge
+          label="API response time (P95)"
+          loading={avgApiResponseTimeLoading}
+          error={avgApiResponseTimeErr}
+          value={avgApiResponseTime ?? 0}
+          maxValue={8}
+          format={(n) => `${n.toFixed(2)}s`}
+        />
       </Container>
     </>
   );
