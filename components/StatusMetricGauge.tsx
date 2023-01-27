@@ -89,24 +89,24 @@ export const StatusMetricGauge = ({
         justifyContent="space-between"
         alignItems="center"
       >
-        <Grid item xs={2}>
+        <Grid item xs={3}>
           <Typography variant="body1">
             Last:&nbsp;<span style={{ color: labelColor }}>{lastText}</span>
           </Typography>
         </Grid>
-        <Grid item xs={10}>
+        <Grid item xs={9}>
           <StatusLinearProgress
             loading={loading}
             error={error}
             value={lastScaled}
           />
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={3}>
           <Typography variant="body1">
             Mean:&nbsp;<span style={{ color: labelColor }}>{meanText}</span>
           </Typography>
         </Grid>
-        <Grid item xs={10}>
+        <Grid item xs={9}>
           <StatusLinearProgress
             loading={loading}
             error={error}
