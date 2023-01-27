@@ -21,6 +21,10 @@ export const UniversalisFooter = ({ ...boxProps }: UniversalisFooterProps) => {
               About
             </Link>
             &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+            <Link href="/" color={"#9ab9fa"} underline="none">
+              Service Status
+            </Link>
+            &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
             <Link
               href="https://docs.universalis.app"
               color={"#9ab9fa"}
