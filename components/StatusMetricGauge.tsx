@@ -9,6 +9,7 @@ import {
 import LinearProgress, {
   linearProgressClasses,
 } from "@mui/material/LinearProgress";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 const ThresholdLinearProgress = styled(LinearProgress)(({ value }) => ({
   height: 15,
@@ -74,13 +75,22 @@ export const StatusMetricGauge = ({
   format = () => <>{last}</>,
   ...boxProps
 }: StatusMetricGaugeProps) => {
+  const matchesMobile = useMediaQuery("(max-width:600px)");
+  const matchesMobileNarrow = useMediaQuery("(max-width:300px)");
+
   const statusFormat = (value: number) =>
     loading ? "Loading" : error ? "Error" : format(value);
+
   const lastText = statusFormat(last);
   const lastScaled = rescale(last, minValue, maxValue) * 100;
   const meanText = statusFormat(mean);
   const meanScaled = rescale(mean, minValue, maxValue) * 100;
+
   const labelColor = error ? "red" : "#fffca6";
+
+  const labelWidth = matchesMobileNarrow ? 5 : matchesMobile ? 4 : 2;
+  const gaugeWidth = 12 - labelWidth;
+
   return (
     <Box {...boxProps}>
       <Grid
@@ -89,24 +99,24 @@ export const StatusMetricGauge = ({
         justifyContent="space-between"
         alignItems="center"
       >
-        <Grid item xs={3}>
+        <Grid item xs={labelWidth}>
           <Typography variant="body1">
             Last:&nbsp;<span style={{ color: labelColor }}>{lastText}</span>
           </Typography>
         </Grid>
-        <Grid item xs={9}>
+        <Grid item xs={gaugeWidth}>
           <StatusLinearProgress
             loading={loading}
             error={error}
             value={lastScaled}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={labelWidth}>
           <Typography variant="body1">
             Mean:&nbsp;<span style={{ color: labelColor }}>{meanText}</span>
           </Typography>
         </Grid>
-        <Grid item xs={9}>
+        <Grid item xs={gaugeWidth}>
           <StatusLinearProgress
             loading={loading}
             error={error}

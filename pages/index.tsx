@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import { subHours } from "date-fns";
-import { Container, Link, Typography } from "@mui/material";
+import { Container, Link, Typography, useMediaQuery } from "@mui/material";
 import universalis from "./universalis.png";
 import Grid from "@mui/material/Grid";
 import Image from "next/image";
@@ -10,6 +10,9 @@ import { StatusMetricGauge } from "../components/StatusMetricGauge";
 import { UniversalisFooter } from "../components/UniversalisFooter";
 
 const Home: NextPage = () => {
+  const matchesMobile = useMediaQuery("(max-width:600px)");
+  const matchesMobileNarrow = useMediaQuery("(max-width:300px)");
+
   const end = new Date();
   const start = subHours(end, 6);
   const step = "5s";
@@ -70,6 +73,15 @@ const Home: NextPage = () => {
     console.error(avgApiResponseTimeErr);
   }
 
+  const titleFontSize = matchesMobileNarrow
+    ? 32
+    : matchesMobile
+    ? 36
+    : undefined;
+  const fontSize = matchesMobileNarrow ? 18 : undefined;
+  const logoWidth = matchesMobile ? 2 : 1;
+  const titleWidth = 12 - logoWidth;
+
   const title = "Service Status - Universalis";
   const description =
     "Final Fantasy XIV Online: Market Board aggregator. Find Prices, track Item History and create Price Alerts. Anywhere, anytime.";
@@ -90,12 +102,12 @@ const Home: NextPage = () => {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Grid item xs={11}>
-              <Typography variant="h2" component="h1">
+            <Grid item xs={titleWidth}>
+              <Typography variant="h2" component="h1" fontSize={titleFontSize}>
                 Service Status
               </Typography>
             </Grid>
-            <Grid item xs={1}>
+            <Grid item xs={logoWidth}>
               <Link href="https://universalis.app">
                 <Image src={universalis} />
               </Link>
@@ -103,7 +115,7 @@ const Home: NextPage = () => {
           </Grid>
         </header>
         <main>
-          <Typography variant="h5" component="h2" mb={2}>
+          <Typography variant="h5" component="h2" fontSize={fontSize} mb={2}>
             Website error rate
           </Typography>
           <StatusMetricGauge
@@ -114,7 +126,7 @@ const Home: NextPage = () => {
             format={(n) => `${(n * 100).toFixed(2)}%`}
             mb={3}
           />
-          <Typography variant="h5" component="h2" mb={2}>
+          <Typography variant="h5" component="h2" fontSize={fontSize} mb={2}>
             Website response time (P95)
           </Typography>
           <StatusMetricGauge
@@ -126,7 +138,7 @@ const Home: NextPage = () => {
             format={(n) => `${n.toFixed(2)}s`}
             mb={3}
           />
-          <Typography variant="h5" component="h2" mb={2}>
+          <Typography variant="h5" component="h2" fontSize={fontSize} mb={2}>
             API error rate
           </Typography>
           <StatusMetricGauge
@@ -137,7 +149,7 @@ const Home: NextPage = () => {
             format={(n) => `${(n * 100).toFixed(2)}%`}
             mb={3}
           />
-          <Typography variant="h5" component="h2" mb={2}>
+          <Typography variant="h5" component="h2" fontSize={fontSize} mb={2}>
             API response time (P95)
           </Typography>
           <StatusMetricGauge
